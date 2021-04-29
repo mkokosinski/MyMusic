@@ -10,7 +10,6 @@ const post = (url, body) =>
 
       fetch(url, {
         method: 'POST',
-        headers: {},
         body: formData,
       })
         .then((res) => {

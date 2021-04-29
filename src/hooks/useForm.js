@@ -1,71 +1,68 @@
 import { useCallback, useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
+import { getVisibleErrors, touchAllValues } from '../utils/formHelpers';
+import { isEmpty } from '../utils/objectHelpers';
 
-export const useForm = ({ initialValues, validationSchema, onSubmit }) => {
-  const [dirty, setDirty] = useState(false);
+export const useForm = ({ initialValues, validation, onSubmit }) => {
+  const [visibleErrors, setVisibleErrors] = useState({});
   const [errors, setErrors] = useState({});
   const [isValid, setIsValid] = useState(false);
   const [touched, setTouched] = useState({});
   const [values, setValues] = useState(initialValues);
   const [isSubmitting, setisSubmitting] = useState(false);
 
-  const validate = useCallback(
-    (name, value) => {
-      validationSchema
-        .validate(values, { abortEarly: false })
-        .then(() => {
-          setErrors({});
-          setIsValid(true);
-        })
-        .catch((errors) => {
-          const { inner } = errors;
-          const fieldErrors = inner.reduce((acc, cur) => {
-            const { path, message } = cur;
-            // return touched[path] ? { ...acc, [path]: message } : { ...acc };
-            return { ...acc, [path]: message };
-          }, {});
+  const validate = useCallback(() => {
+    const validationErrors = validation(values);
+    setErrors(validationErrors);
 
-          setErrors(fieldErrors);
-        });
-    },
-    [touched, validationSchema, values]
-  );
+    if (isEmpty(validationErrors)) {
+      setIsValid(true);
+    } else {
+      setIsValid(false);
+    }
+  }, [validation, values]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setDirty(true);
-    setTouched((prev) => ({ ...prev, [name]: true }));
     setValues((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleBlur = (e) => {
+    const { name } = e.target;
+    setTouched((prev) => ({ ...prev, [name]: true }));
+  };
+
+  const handleSubmit = async (e) => {
     try {
       e.preventDefault();
-      validate();
-      if (!isValid) {
+      setTouched(touchAllValues(values));
+      if (!isValid || isSubmitting) {
         return;
       }
-
       setisSubmitting(true);
-      setDirty(true);
-      onSubmit(values);
-      setisSubmitting(false);
+      await onSubmit(values);
     } catch (error) {
-      setisSubmitting(false);
       console.error(error);
+    } finally {
+      setisSubmitting(false);
     }
   };
 
   useEffect(() => {
     validate();
-  }, [validate, values]);
+  }, [validate]);
+
+  useEffect(() => {
+    setVisibleErrors(getVisibleErrors(errors, touched));
+  }, [errors, touched]);
 
   return {
-    dirty,
-    errors,
+    errors: visibleErrors,
     isSubmitting,
+    isValid,
     values,
     touched,
+    handleBlur,
     handleChange,
     handleSubmit,
   };

@@ -1,145 +1,138 @@
 import React, { useState } from 'react';
-import PropTypes from 'prop-types';
-import * as Yup from 'yup';
 import Button from '../Buttons/Button';
 import FileInput from './FileInput/FileInput';
 import TextInput from './TextInput/TextInput';
 import SelectInput from './SelectInput/SelectInput';
 import { useForm } from '../../hooks/useForm';
+import { contractorValidation } from './validation';
 import { createContractor } from '../../api/MainConnections';
+import { contractorTypesOptions, CONTRACTOR_TYPE } from '../../utils/constants';
 import './Form.scss';
-/*
-Proszę napisać w React formularz dodawania kontrahenta który zawiera:
-- Imię
-- Nazwisko
-- Typ (Osoba lub Firma)
-- Numer identyfikacyjny (jeśli osoba to Pesel lub jeśli firma to NIP)
-- Zdjęcie (Podgląd ma się wyświetlić po wybraniu pliku z dysku)
-
-Formularz ma walidować dane
-Numeru Identyfikacyjnego:
-- Czy wprowadzono poprawny PESEL / NIP
-
-Zdjęcie:
-- Format JPG/JPEG
-- Aspect ratio 1:1 (zdjęcie w kwadracie)
-*/
-
-const validationSchema = Yup.object().shape({
-  name: Yup.string().required('Wymagane'),
-  surname: Yup.string().required(),
-  type: Yup.string().required(),
-  pesel: Yup.string().when('type', {
-    is: (val) => val === 'person',
-    then: Yup.string().required(),
-    otherwise: Yup.string(),
-  }),
-  nip: Yup.string().when('type', {
-    is: (val) => val === 'company',
-    then: Yup.string().required(),
-    otherwise: Yup.string(),
-  }),
-});
 
 const initialValues = {
+  img: '',
   name: '',
   surname: '',
-  type: '',
+  type: CONTRACTOR_TYPE.PERSON,
   pesel: '',
   nip: '',
 };
 
-const Form = (props) => {
+const Form = () => {
   const [serverErrors, setServerErrors] = useState(null);
 
-  const onSubmit = (values) => {
-    const { img } = values;
+  const onSubmit = async (values) => {
+    const { img, nip, pesel, ...restValues } = values;
     const dataToSend = {
-      ...values,
+      ...restValues,
       img: img.file,
+      idNumber: values.type === CONTRACTOR_TYPE.COMPANY ? nip : pesel,
     };
-    createContractor(dataToSend).catch((err) => setServerErrors(err));
+    setServerErrors(null);
+    await createContractor(dataToSend).catch((err) => setServerErrors(err));
+    console.log('end');
   };
 
-  const { errors, values, handleChange, handleSubmit } = useForm({
+  const {
+    errors,
+    isSubmitting,
+    values,
+    handleBlur,
+    handleChange,
+    handleSubmit,
+  } = useForm({
     initialValues,
     onSubmit,
-    validationSchema,
+    validation: contractorValidation,
   });
+
   return (
     <form className='form' onSubmit={handleSubmit}>
-      <TextInput
-        className='form__input'
-        label='Imię'
-        name='name'
-        type='text'
-        onChange={handleChange}
-        value={values.name}
-        errorMessage={errors.name}
-      />
+      <fieldset className='form__fieldset' disabled={isSubmitting}>
+        <div className='form__file'>
+          <FileInput
+            name='img'
+            onChange={handleChange}
+            onBlur={handleBlur}
+            value={values.img}
+            errorMessage={errors.img}
+          />
+        </div>
 
-      <TextInput
-        className='form__input'
-        name='surname'
-        label='Nazwisko'
-        type='text'
-        onChange={handleChange}
-        value={values.surname}
-        errorMessage={errors.surname}
-      />
+        <div className='form__inputs'>
+          <TextInput
+            label='Imię'
+            name='name'
+            type='text'
+            onChange={handleChange}
+            onBlur={handleBlur}
+            value={values.name}
+            errorMessage={errors.name}
+          />
 
-      <SelectInput
-        className='form__input'
-        name='type'
-        label='Typ'
-        options={[
-          { label: 'Osoba', value: 'person' },
-          { label: 'Firma', value: 'company' },
-        ]}
-        onChange={handleChange}
-        value={values.type}
-        errorMessage={errors.type}
-      />
+          <TextInput
+            name='surname'
+            label='Nazwisko'
+            type='text'
+            onChange={handleChange}
+            onBlur={handleBlur}
+            value={values.surname}
+            errorMessage={errors.surname}
+          />
 
-      {values.type === 'person' ? (
-        <TextInput
-          className='form__input'
-          id='pesel'
-          name='pesel'
-          label='PESEL'
-          type='text'
-          onChange={handleChange}
-          value={values.pesel}
-          errorMessage={errors.pesel}
-        />
-      ) : (
-        <TextInput
-          className='form__input'
-          id='nip'
-          name='nip'
-          label='Numer NIP'
-          type='text'
-          onChange={handleChange}
-          value={values.nip}
-          errorMessage={errors.nip}
-        />
-      )}
+          <SelectInput
+            name='type'
+            label='Typ'
+            options={contractorTypesOptions}
+            onChange={handleChange}
+            onBlur={handleBlur}
+            value={values.type}
+            errorMessage={errors.type}
+          />
 
-      <FileInput
-        name='img'
-        onChange={handleChange}
-        value={values.file}
-        errorMessage={errors.nip}
-      />
-
-      <Button className='button--submit' type='submit'>
+          {values.type === 'person' ? (
+            <TextInput
+              id='pesel'
+              name='pesel'
+              label='PESEL'
+              type='text'
+              maxLength='11'
+              onChange={handleChange}
+              onBlur={handleBlur}
+              value={values.pesel}
+              errorMessage={errors.pesel}
+            />
+          ) : (
+            <TextInput
+              id='nip'
+              name='nip'
+              label='Numer NIP'
+              type='text'
+              maxLength='10'
+              onChange={handleChange}
+              onBlur={handleBlur}
+              value={values.nip}
+              errorMessage={errors.nip}
+            />
+          )}
+        </div>
+      </fieldset>
+      <Button
+        className='button--submit form__button'
+        type='submit'
+        disabled={isSubmitting}
+      >
         Wyślij
+        {isSubmitting && (
+          <span class='form__spinner material-icons-outlined'>sync</span>
+        )}
       </Button>
-      {serverErrors && <div className='errorMessage'>{serverErrors}</div>}
+
+      {serverErrors && (
+        <div className='error form__errorMessage '>{serverErrors}</div>
+      )}
     </form>
   );
 };
-
-Form.propTypes = {};
 
 export default Form;

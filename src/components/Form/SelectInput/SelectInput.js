@@ -24,15 +24,15 @@ const SelectInput = ({
     <div className={formControlClassNames}>
       <select name={name} className='formControl__input' onChange={onChange}>
         {options?.map((opt) => (
-          <option value={opt.value}>{opt.label}</option>
+          <option key={opt.value} value={opt.value}>
+            {opt.label}
+          </option>
         ))}
       </select>
       <span className='formControl__label'>
         <label htmlFor={name}>{label}</label>
       </span>
-      <div className='errorMessage formControl__errorMessage'>
-        {errorMessage}
-      </div>
+      <div className='error formControl__errorMessage'>{errorMessage}</div>
     </div>
   );
 };
@@ -44,8 +44,9 @@ SelectInput.propTypes = {
     PropTypes.shape({
       label: PropTypes.string,
       value: PropTypes.any,
-    })
+    }),
   ),
+  value: PropTypes.string,
   onChange: PropTypes.func.isRequired,
 };
 

@@ -2,7 +2,14 @@ import React, { useEffect, useState } from 'react';
 import PropTypes from 'prop-types';
 import cx from 'classnames';
 
-const TextInput = ({ errorMessage, label, name, value, onChange }) => {
+const TextInput = ({
+  errorMessage,
+  label,
+  name,
+  value,
+  onChange,
+  ...otherProps
+}) => {
   const [hasValue, setHasValue] = useState(false);
 
   useEffect(() => {
@@ -24,13 +31,12 @@ const TextInput = ({ errorMessage, label, name, value, onChange }) => {
           name={name}
           onChange={onChange}
           value={value}
+          {...otherProps}
         />
         <span className='formControl__label'>
           <label htmlFor={name}>{label}</label>
         </span>
-        <div className='errorMessage formControl__errorMessage'>
-          {errorMessage}
-        </div>
+        <div className='error formControl__errorMessage'>{errorMessage}</div>
       </div>
     </>
   );
@@ -41,6 +47,7 @@ TextInput.propTypes = {
   name: PropTypes.string.isRequired,
   label: PropTypes.string,
   onChange: PropTypes.func.isRequired,
+  value: PropTypes.string,
 };
 
 export default TextInput;

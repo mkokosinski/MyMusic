@@ -1,3 +1,5 @@
+@import '../scss/colors';
+
 html,
 body {
   margin: 0;
@@ -13,6 +15,18 @@ code {
     monospace;
 }
 
+fieldset {
+  border: 0;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+}
+
 * {
   box-sizing: border-box;
+}
+
+.error {
+  color: $red;
+  white-space: pre-line;
 }

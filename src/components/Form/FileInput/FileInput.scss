@@ -1,17 +1,28 @@
 @import '../../../scss/colors';
+@import '../FormControl.scss';
 
 .fileField {
-  border: 1px solid rgba(0, 0, 0, 0.1);
   display: flex;
-  height: 50vw;
   margin: 0 auto;
-  max-height: 400px;
-  max-width: 400px;
-  width: 50vw;
+  position: relative;
+  height: 30vw;
+  max-height: 300px;
+  max-width: 300px;
+  min-height: 250px;
+  min-width: 250px;
+  outline: 1px solid $gray;
+  width: 30vw;
+
+  &--hasError {
+    outline: 1px solid $red;
+  }
+  &:focus-within {
+    outline: 1px solid $blue;
+  }
 
   &__input {
-    width: 0.1px;
-    height: 0.1px;
+    width: 0px;
+    height: 0px;
     opacity: 0;
     overflow: hidden;
     position: absolute;
@@ -19,14 +30,30 @@
   }
 
   &__label {
-    flex-direction: column;
+    cursor: pointer;
     display: flex;
+    flex-direction: column;
     flex: 1 1;
     position: relative;
     overflow: hidden;
+  }
 
-    &:focus-within {
-      outline: 1px solid $blue;
+  &__placeholder {
+    background-color: $gray;
+    display: grid;
+    flex-direction: column;
+    font-size: 0.8rem;
+    height: 100%;
+    place-content: center;
+    text-align: center;
+
+    span {
+      margin: 10px 0;
+      font-size: 2.6rem;
+    }
+
+    & > * {
+      opacity: 0.6;
     }
   }
 
@@ -48,5 +75,8 @@
     position: absolute;
     pointer-events: none;
     width: 100%;
+  }
+  &__errorMessage {
+    text-align: center;
   }
 }

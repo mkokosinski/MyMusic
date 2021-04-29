@@ -3,13 +3,24 @@ import PropTypes from 'prop-types';
 import cx from 'classnames';
 import './Buttons.scss';
 
-const Button = ({ children, className, type, onCLick, ...restOfProps }) => {
-  const buttonClassNames = cx('button', { [className]: className });
+const Button = ({
+  children,
+  className,
+  disabled,
+  type,
+  onClick,
+  ...restOfProps
+}) => {
+  const buttonClassNames = cx('button', {
+    'button--disabled': disabled,
+    [className]: className,
+  });
   return (
     <button
       className={buttonClassNames}
       type={type}
-      onClick={onCLick}
+      onClick={onClick}
+      disabled={disabled}
       {...restOfProps}
     >
       {children}
@@ -18,9 +29,11 @@ const Button = ({ children, className, type, onCLick, ...restOfProps }) => {
 };
 
 Button.propTypes = {
+  className: PropTypes.string,
   children: PropTypes.node,
+  disabled: PropTypes.bool,
   type: PropTypes.oneOf(['submit', 'reset', 'button']),
-  onCLick: PropTypes.func,
+  onClick: PropTypes.func,
 };
 
 export default Button;

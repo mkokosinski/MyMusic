@@ -1,0 +1,93 @@
+@import '../../scss/colors';
+
+.form {
+  background: white;
+  box-shadow: 0 1px 10px -6px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  justify-content: center;
+  max-width: 700px;
+  margin: 10px auto;
+  padding: 40px;
+  width: 90vw;
+}
+
+$inputPadding: 10px;
+
+.formControl {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 14px;
+  position: relative;
+
+  &--hasValue {
+    .formControl__label {
+      label {
+        padding: 0 10px;
+        transform: translate(-10px, -20px) scale(0.9);
+      }
+    }
+  }
+
+  &--hasError {
+    .formControl__input {
+      border: 1px solid $red;
+    }
+    .formControl__label {
+      label {
+        color: $red;
+      }
+    }
+  }
+
+  &__label {
+    display: flex;
+    position: absolute;
+    height: 100%;
+    pointer-events: none;
+    width: 100%;
+    label {
+      background: white;
+      color: initial;
+      display: block;
+      font-size: 0.8rem;
+      left: $inputPadding;
+      pointer-events: none;
+      position: absolute;
+      top: $inputPadding;
+      transition: transform 300ms, padding 300ms, color 200ms;
+    }
+  }
+
+  &__input {
+    border: 1px solid $black;
+    outline: none;
+    border-radius: 0px;
+    flex: 1 1;
+    padding: $inputPadding;
+    transition: border 200ms;
+
+    &:focus {
+      border: 1px solid $blue;
+    }
+
+    &:focus ~ .formControl__label {
+      label {
+        color: $blue;
+        padding: 0 10px;
+        transform: translate(-10px, -20px) scale(0.9);
+      }
+    }
+  }
+
+  &__errorMessage {
+    bottom: -1rem;
+    font-size: 0.7rem;
+    position: absolute;
+  }
+}
+
+.errorMessage {
+  color: $red;
+}
